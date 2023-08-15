@@ -27,7 +27,19 @@ class PollController extends BaseController {
             return $response->send();
         }
 
-        $poll = Poll::with('poll_options')->inRandomOrder()->where('user_id', $user->id)->first();
+        $poll = Poll::with('poll_options')
+            ->inRandomOrder()
+            ->where('user_id', $user->id)
+            ->where('status', Poll::STATUSES['PUBLISHED'])
+            ->first();
+
+        if (is_null($poll)) {
+            $response = new Response(json_encode(['message' => 'There isn\'t any published poll.']),
+                Response::HTTP_NOT_FOUND,
+                ['content-type' => 'application/json']
+            );
+            return $response->send();
+        }
 
         $response = new Response(json_encode([
                 'data' => [
